@@ -56,8 +56,12 @@ def run_pipeline(claim_text: str, context: dict, mock_evidence: dict = None) -> 
             return {"error": "No evidence retrieved."}
         
         best_record = top_results[0]["record"]
-        evidence_text = best_record["sources"]["text"]
-        image_path = best_record["sources"]["image_path"]
+        if "sources" in best_record:
+            evidence_text = best_record["sources"].get("text", "")
+            image_path = best_record["sources"].get("image_path", "")
+        else:
+            evidence_text = best_record.get("text", "")
+            image_path = best_record.get("image_path", "")
     
     # Extract metadata
     unit = context.get("unit", "")
@@ -100,6 +104,7 @@ def run_pipeline(claim_text: str, context: dict, mock_evidence: dict = None) -> 
     # 6. Explanation
     explanation = generate_explanation(
         claim_text=claim_text,
+        evidence_text=evidence_text,
         t_label=t_label,
         t_score=t_score,
         i_label=i_label,

@@ -64,3 +64,4 @@ yarn-error.log*
 
 # Project specific
 trustagent.db
+data/qdrant_db/

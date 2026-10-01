@@ -1,7 +1,7 @@
 import torch
 from transformers import AutoTokenizer, AutoModelForSequenceClassification
 
-_model_name = "cross-encoder/nli-deberta-v3-base" # Fine-tuned NLI model
+_model_name = "cross-encoder/nli-deberta-v3-base" 
 _tokenizer = None
 _model = None
 
@@ -38,12 +38,17 @@ def verify_text(claim: str, evidence_text: str) -> tuple[str, float]:
     prob_entailment = probs[1].item()
     prob_neutral = probs[2].item()
     
-    # Simple max heuristic
-    max_prob = max(prob_entailment, prob_contradiction, prob_neutral)
+    # ----------------------------------------------------
+    # UPGRADE B: Risk-Averse Safety Thresholding
+    # ----------------------------------------------------
+    # If there is even a 25% chance that the AI claim is a hallucination
+    # or contradicts the evidence, we immediately flag it as a contradiction
+    # to force a HUMAN_REVIEW. This is critical for enterprise safety.
+    CONTRADICTION_THRESHOLD = 0.25
     
-    if max_prob == prob_entailment:
-        return "SUPPORT", prob_entailment
-    elif max_prob == prob_contradiction:
+    if prob_contradiction >= CONTRADICTION_THRESHOLD:
         return "CONTRADICT", prob_contradiction
+    elif prob_entailment > prob_neutral:
+        return "SUPPORT", prob_entailment
     else:
         return "NO_EVIDENCE", prob_neutral

@@ -3,3 +3,6 @@ uvicorn
 sqlalchemy
 psycopg2-binary
 pydantic
+python-multipart
+PyPDF2
+spacy
